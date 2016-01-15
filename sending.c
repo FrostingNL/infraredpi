@@ -65,25 +65,35 @@ void setup_io()
 } // setup_io
 
 void send_function(char file[]) {
-	printf("Begin send_function\r\n");
+	// printf("Begin send_function\r\n");
 	FILE* to_send = fopen(file, "r");
 	char c;
 	int i;
 	OUT_GPIO(send_pin);
 	OUT_GPIO(clock_pin);
-	int state = 1;
-	printf("Before while\r\n");
+	int clk = 1;
+	GPIO_CLR = 1 << clock_pin;
+	// printf("Before while\r\n");
 	while((c = fgetc(to_send)) != 255) {
 		for(i = 0; i < 8; i++) {
 			int bit = (c >> i & 1);
 			GPIO_CLR = 1 << send_pin;
 			GPIO_SET = bit << send_pin;
+		 	usleep(1);
 			GPIO_CLR = 1 << clock_pin;
-			GPIO_SET = state << clock_pin;
-			state ^= 1;
-			printf("%i\r\n", bit);
-		 	//usleep(10000);
+			GPIO_SET = clk << clock_pin;
+			clk ^= 1;
+		 	usleep(1);
 		}
+	}
+	int d;
+
+	GPIO_CLR = 1 << send_pin;
+	for(d = 0; d < 8; d++) {
+		GPIO_CLR = 1 << clock_pin;
+		GPIO_SET = clk << clock_pin;
+		clk ^= 1;
+	 	usleep(1);
 	}
 	printf("Done\r\n");
 	fclose(to_send);
@@ -91,6 +101,6 @@ void send_function(char file[]) {
 
 int main() {
 	setup_io();
-	send_function("sending.c");
+	send_function("test.txt");
 	return 0;
 }

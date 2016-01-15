@@ -61,20 +61,62 @@ void setup_io()
  
 } // setup_io
 
+char get_char(int buf[]) {
+  int multiplier = 1;
+  int i;
+  int bin = 0;
+  for(i=0; i < 8; i++) {
+    bin += (multiplier * buf[i]);
+    multiplier *= 2;
+  }
+  //printf("Bin: %i, char: %c\r\n", bin, bin);
+  return bin;
+}
+
 int clock_pin = 24;
+int data_pin = 25;
+int arrbit[10000];
 
 int main() {
 	setup_io();
-	INP_GPIO(24);
+	INP_GPIO(clock_pin);
 	int prev_clk = 1;
+  int clk = 1;
+  int buf[8];
+  int p = 0;
+  int first = 1;
+  int finished = 0;
 	while(1) {
-		int clk = GET_GPIO(24) >> 24;
+		clk = GET_GPIO(clock_pin) >> clock_pin;
 		if(prev_clk != clk) {
-			int bit = GET_GPIO(25) >> 25;
-			printf("%i\r\n", bit);
-		}
-		prev_clk = clk;
-	}
+      if(first) {
+        first=0;
+      } else {
+        //printf("prev: %i, clk: %i\r\n", prev_clk, clk);
+  		  int bit = GET_GPIO(data_pin) >> data_pin;
+        if(bit==0) finished++;
+        else finished = 0;
+        arrbit[p] = bit;
+        /*
+        buf[p] = bit;
+        if(p==7) {
+          char c = get_char(buf);
+          printf("%c\r\n", c); 
+          p=-1;
+        }
+        */
+        p++;
+        if(finished==8) break;
+		  }
+    }
+	prev_clk = clk;
+	
+  }
+
+  int x;
+  for(x=0; x<=p;x++) {
+    printf("arrbit[%i]: %i\r\n", x, arrbit[x]);
+  }
 
 	return 0;
 }
