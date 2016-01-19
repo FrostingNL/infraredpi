@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <time.h>
 
 // Access from ARM Running Linux 
 #define BCM2708_PERI_BASE        0x3F000000
@@ -89,18 +90,20 @@ void send_function(char file[]) {
 	int d;
 
 	GPIO_CLR = 1 << send_pin;
-	for(d = 0; d < 8; d++) {
+	usleep(1);
+	for(d = 0; d < 24; d++) {
 		GPIO_CLR = 1 << clock_pin;
 		GPIO_SET = clk << clock_pin;
 		clk ^= 1;
 	 	usleep(1);
 	}
-	printf("Done\r\n");
 	fclose(to_send);
 }
 
 int main() {
 	setup_io();
-	send_function("test.txt");
+	send_function("tosend.txt");
+	printf("Done!\r\n");
+
 	return 0;
 }

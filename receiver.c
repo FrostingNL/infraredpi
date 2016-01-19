@@ -65,7 +65,7 @@ char get_char(int buf[]) {
   int multiplier = 1;
   int i;
   int bin = 0;
-  for(i=0; i < 8; i++) {
+  for(i=7; i >= 0; i--) {
     bin += (multiplier * buf[i]);
     multiplier *= 2;
   }
@@ -75,48 +75,44 @@ char get_char(int buf[]) {
 
 int clock_pin = 24;
 int data_pin = 25;
-int arrbit[10000];
+int arrbit[100000000];
 
 int main() {
 	setup_io();
 	INP_GPIO(clock_pin);
 	int prev_clk = 1;
-  int clk = 1;
-  int buf[8];
-  int p = 0;
-  int first = 1;
-  int finished = 0;
+    int clk = 1;
+    int p = 0;
+    int first = 1;
+    int finished = 0;
 	while(1) {
 		clk = GET_GPIO(clock_pin) >> clock_pin;
 		if(prev_clk != clk) {
-      if(first) {
-        first=0;
-      } else {
-        //printf("prev: %i, clk: %i\r\n", prev_clk, clk);
-  		  int bit = GET_GPIO(data_pin) >> data_pin;
-        if(bit==0) finished++;
-        else finished = 0;
-        arrbit[p] = bit;
-        /*
-        buf[p] = bit;
-        if(p==7) {
-          char c = get_char(buf);
-          printf("%c\r\n", c); 
-          p=-1;
-        }
-        */
-        p++;
-        if(finished==8) break;
-		  }
-    }
-	prev_clk = clk;
-	
-  }
+      		if(first) {
+        		first=0;
+    		} else {
+  		  		int bit = GET_GPIO(data_pin) >> data_pin;
+		        if(bit==0) finished++;
+		        else finished = 0;
+		        arrbit[p] = bit;
+		        
+		        p++;
+		        if(finished==24) break;
+			}
+    	}
+		prev_clk = clk;
+	}
 
-  int x;
-  for(x=0; x<=p;x++) {
-    printf("arrbit[%i]: %i\r\n", x, arrbit[x]);
+  FILE* to_receive = fopen("toreceive.txt", "w");
+  int i;
+  for(i = 0; i <= p-24; i+=8) {
+    int buf2[8] = {arrbit[i], arrbit[i+1], arrbit[i+2], arrbit[i+3], arrbit[i+4], arrbit[i+5], arrbit[i+6], arrbit[i+7]};
+    fprintf(to_receive, "%c", get_char(buf2)); fflush(0);
   }
+  fclose(to_receive);
+  printf("Done! [p=%i, percentage buffer filled:%f]\r\n", p, (double)(((double)p/(double)100000000)*100));
+
+	return 0;
 
 	return 0;
 }
