@@ -12,11 +12,11 @@
 #define PAGE_SIZE (4*1024)
 #define BLOCK_SIZE (4*1024)
  
+int clock_pin = 23;
 int send_pin1 = 18;
 int send_pin2 = 4;
 int send_pin3 = 27;
 int send_pin4 = 5;
-int clock_pin = 23;
 
 int  mem_fd;
 void *gpio_map;
@@ -108,6 +108,7 @@ void send_function(char file[]) {
 			//printf("%i", bit); fflush(0);
 			//if(i==4) printf("|");  fflush(0);
 		}
+
 			GPIO_CLR = 1 << send_pin1;
 			GPIO_SET = bitbuf[0] << send_pin1;
 			GPIO_CLR = 1 << send_pin2;
@@ -120,7 +121,7 @@ void send_function(char file[]) {
 			GPIO_CLR = 1 << clock_pin;
 			GPIO_SET = clk << clock_pin;
 			clk ^= 1;
-		 	usleep(1);
+		 	usleep(2);
 
 			GPIO_CLR = 1 << send_pin1;
 			GPIO_SET = bitbuf[4] << send_pin1;
@@ -134,7 +135,7 @@ void send_function(char file[]) {
 			GPIO_CLR = 1 << clock_pin;
 			GPIO_SET = clk << clock_pin;
 			clk ^= 1;
-		 	usleep(1);
+		 	usleep(2);
 	//printf("]\r\n");
 	}
 	int d;

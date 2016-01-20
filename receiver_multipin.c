@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <time.h>
 
 // Access from ARM Running Linux 
 #define BCM2708_PERI_BASE        0x3F000000
@@ -77,7 +78,7 @@ int clock_pin = 24;
 int data_pin1 = 25;
 int data_pin2 = 17;
 int data_pin3 = 22;
-int data_pin4 = 6;
+int data_pin4 = 11;
 int arrbit[100000000];
 
 int main(int argc, char *argv[]) {
@@ -96,7 +97,9 @@ int main(int argc, char *argv[]) {
   int buf[8];
   int p = 0;
   int first = 1;
+  int startcount =  1;
   int finished = 0;
+  clock_t start = 0;
 	while(1) {
 		clk = GET_GPIO(clock_pin) >> clock_pin;
 		if(prev_clk != clk) {
@@ -117,11 +120,21 @@ int main(int argc, char *argv[]) {
         arrbit[p+3] = bit4;
         p += 4;
         if(finished==4) break;
+        if(startcount == 1) {
+          start = clock();
+          printf("Started\n");
+          startcount = 0;
+        }
 		  }
     }
 	prev_clk = clk;
 	
   }
+
+  double time = (double) (clock() - start)/CLOCKS_PER_SEC;
+  printf("Sending complete in: %.6fs\n", time);
+  printf("Counter-32: %.6fs\n", p-32);
+  printf("bits/second:  %f\n", (p-32)/time);
 
   FILE* to_receive = fopen(argv[1], "w");
   int i;
